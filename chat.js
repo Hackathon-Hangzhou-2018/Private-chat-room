@@ -43,7 +43,7 @@ function sendUserJoinedRoomMessage(userDeviceAddress, room_ID){
 	var device = require('byteballcore/device.js');
 	db.query("SELECT device_address,(SELECT name FROM users WHERE device_address=?) AS name FROM users WHERE current_room = ? AND device_address!=?", [userDeviceAddress, room_ID, userDeviceAddress], function(rows) {
 		rows.forEach(function(row) {
-			device.sendMessageToDevice(row.device_address, 'text', row.name + " has joined your room");
+			device.sendMessageToDevice(row.device_address, 'text', row.name + " 已经加入你的房间");
 		});
 	});
 }
@@ -52,7 +52,7 @@ function sendUserLeftHisRoomMessage(userDeviceAddress, room_ID){
 	var device = require('byteballcore/device.js');
 	db.query("SELECT device_address,(SELECT name FROM users WHERE device_address=?) AS name FROM users WHERE current_room=(SELECT current_room FROM users WHERE device_address=?) AND device_address!=?", [userDeviceAddress, userDeviceAddress, userDeviceAddress], function(rows) {
 		rows.forEach(function(row) {
-			device.sendMessageToDevice(row.device_address, 'text', row.name + " has left your room");
+			device.sendMessageToDevice(row.device_address, 'text', row.name + " 已经离开你的房间");
 		});
 	});
 }
@@ -61,31 +61,31 @@ function sendUserLeftHisRoomMessage(userDeviceAddress, room_ID){
 
 function returnHelpMenu(from_address, currentRoom) {
 	var device = require('byteballcore/device.js');
-	var returnedTxt = "Welcome to the private room chat bot.";
+	var returnedTxt = "欢迎来到私聊机器人。";
 
 	db.query("SELECT rooms.id AS room_id, rooms.name AS room_name FROM rooms WHERE id=?", [currentRoom], function(rows) {
 		if (rows[0] && currentRoom > 0) {
-			returnedTxt += "\nYou are connected to room " + rows[0].room_name + " (id " + currentRoom + ")";
-			returnedTxt += "\nThe text that you type will be sent to every member of this room.";
+			returnedTxt += "\n你已连接到房间 " + rows[0].room_name + " (id " + currentRoom + ")";
+			returnedTxt += "\n你输入的文本将被发送给这个房间的每个成员.";
 		} else {
-			returnedTxt += "\nYou are not connected to any room.";
+			returnedTxt += "\n你还未连接任何房间。";
 		}
 
 		db.query("SELECT rooms.name AS name,rooms.id AS id FROM allowed_access INNER JOIN rooms ON rooms.id = allowed_access.room  WHERE device_address=?", [from_address], function(rooms) {
 
 			if (rooms.length > 1)
-				returnedTxt += "\n\nYou can connect to these rooms:"
+				returnedTxt += "\n\n你可以连接到这些房间:"
 			rooms.forEach(function(room) {
 				if (room.id != currentRoom)
 					returnedTxt += "\n " + room.name + " ➡ " + getTxtCommandButton("connect", "connect_" + room.id);
 			});
 
-			returnedTxt += "\n\nAt any time:"
-			returnedTxt += "\nType " + getTxtCommandButton("help") + " to return to this menu";
-			returnedTxt += "\nType " + getTxtCommandButton("changeName") + " to change your name";
+			returnedTxt += "\n\n在任何时候:"
+			returnedTxt += "\n输入 " + getTxtCommandButton("help") + " 回到这个菜单";
+			returnedTxt += "\n输入 " + getTxtCommandButton("changeName") + " 改变你的名字";
 			if (conf.usersAllowedToCreateRoom.length === 0 || conf.usersAllowedToCreateRoom.indexOf(from_address) > -1)
-				returnedTxt += "\nType " + getTxtCommandButton("createRoom") + " to create a new room";
-			returnedTxt += "\nThe bot operator has the technical possibility to see your conversation. To converse privately with your friend, better run the bot by yourself.\nhttps://github.com/Papabyte/Private-chat-room \nFork it and improve it!";
+				returnedTxt += "\n输入 " + getTxtCommandButton("createRoom") + " 创造一个新的房间。";
+			returnedTxt += "\n要和你的朋友私下交流，最好自己运行一个机器人。";
 			device.sendMessageToDevice(from_address, 'text', returnedTxt);
 		});
 

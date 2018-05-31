@@ -16,4 +16,4 @@ exports.echoDisabled = false;
 exports.usersAllowedToCreateRoom = [];
 
 
-console.log('finished Private chat room configuration');
+console.log('已完成私人聊天室配置');
